@@ -1,13 +1,32 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import ffmpeg_static from 'ffmpeg-static'
+import ffmpeg from 'fluent-ffmpeg'
+import fs from 'fs'
 import * as sdk from 'microsoft-cognitiveservices-speech-sdk'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path'
 
-type Data = {
-  name: string
+const createVideo = async (soundSrc: string) => {
+  return new Promise<string>((resolve, reject) => {
+    const outputpath = 'output/result.mp4'
+    ffmpeg()
+      .setFfmpegPath(ffmpeg_static as any)
+      .addInput(path.join(process.cwd(), 'src/pages/api/background.png'))
+      .addInput(soundSrc)
+      .size('1080x1350')
+
+      .on('end', async () => {
+        console.log('Processing finished')
+        resolve(outputpath)
+      })
+      .on('error', (err) => {
+        reject(err)
+      })
+      .save(path.join(process.cwd(), outputpath))
+  })
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const radioShow = JSON.parse(req.body)?.radioShow
 
   if (!radioShow || typeof radioShow !== 'string') {
@@ -23,23 +42,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return
   }
 
-  const audioFile = path.join(process.cwd(), 'output.wav')
+  const generatedVoiceSrc = path.join(process.cwd(), 'output/voiceGeneration.wav')
 
   const speechConfig = sdk.SpeechConfig.fromSubscription(speechKey, speechRegion)
-  const audioConfig = sdk.AudioConfig.fromAudioFileOutput(audioFile)
+  const audioConfig = sdk.AudioConfig.fromAudioFileOutput(generatedVoiceSrc)
 
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig)
 
+  // const ssml = `
+  //   <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
+  //     <voice name="en-US-JennyNeural">
+  //       <mstts:express-as style="shouting">
+  //         ${radioShow}
+  //       </mstts:express-as>
+  //     </voice>
+  //     <voice name="en-US-GuyNeural">
+  //       <mstts:express-as style="excited">
+  //         Good morning to you too Jenny!
+  //       </mstts:express-as>
+  //     </voice>
+  //   </speak>
+  // `
+
   const ssml = `
     <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
-      <voice name="en-US-JennyNeural">
+      <voice name="en-US-GuyNeural">
         <mstts:express-as style="shouting">
           ${radioShow}
-        </mstts:express-as>
-      </voice>
-      <voice name="en-US-GuyNeural">
-        <mstts:express-as style="excited">
-          Good morning to you too Jenny!
         </mstts:express-as>
       </voice>
     </speak>
@@ -66,9 +95,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     )
   })
 
-  console.log('Now synthesizing to: ' + audioFile)
+  const outputpath = await createVideo(generatedVoiceSrc)
 
-  console.log(radioShow)
-
-  res.status(200).json({ name: 'John Doe' })
+  const videoBuffer = fs.readFileSync(outputpath)
+  res.setHeader('Content-Type', 'video/mp4')
+  return res.status(200).send(videoBuffer)
 }
