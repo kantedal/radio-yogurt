@@ -109,9 +109,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let ssmlString = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">`
   radioShow.forEach((voice) => {
     if (voice.type) {
-      ssmlString += `<voice name="en-US-${voice.name}"><mstts:express-as style="${voice.type}">${voice.text}</mstts:express-as></voice>`
+      ssmlString += `<voice name="en-US-${voice.name}">
+        <prosody rate="+5.00%">
+          <mstts:express-as style="${voice.type}">${voice.text}</mstts:express-as>
+        </prosody>
+      </voice>`
     } else {
-      ssmlString += `<voice name="en-US-${voice.name}">${voice.text}</voice>`
+      ssmlString += `<voice name="en-US-${voice.name}"><prosody rate="+5.00%">${voice.text}</prosody></voice>`
     }
   })
   ssmlString += `</speak>`

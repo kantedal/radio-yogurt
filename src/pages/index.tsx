@@ -8,15 +8,9 @@ import Image from 'next/image'
 import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useDebounce } from 'react-use'
-import z from 'zod'
 import logo from '../assets/logo.svg'
 
 // const inter = Inter({ subsets: ["latin"] });
-
-const schema = z.object({
-  radioShow: z.string(),
-  privacyPolicyAccepted: z.boolean(),
-})
 
 const Home: NextPage = () => {
   const [radioShow, setRadioShow] = useState('')
