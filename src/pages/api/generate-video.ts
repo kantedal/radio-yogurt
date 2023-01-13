@@ -7,9 +7,9 @@ import path from "path";
 import background from "";
 type Data = {};
 const createVideo = async (soundSrc: string) => {
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     let duration = "";
-
+    const outputpath = "src/pages/api/output.mp4";
     ffmpeg()
       .setFfmpegPath(ffmpeg_static as any)
       .addInput(path.join(process.cwd(), "src/pages/api/background.png"))
@@ -18,7 +18,7 @@ const createVideo = async (soundSrc: string) => {
 
       .on("end", async () => {
         console.log("Processing finished");
-        resolve({});
+        resolve(outputpath);
       })
       .on("codecData", (data) => {
         duration = data.duration;
@@ -26,7 +26,7 @@ const createVideo = async (soundSrc: string) => {
       .on("error", (err) => {
         reject(err);
       })
-      .save("output.mp4");
+      .save(path.join(process.cwd(), outputpath));
   });
 };
 
@@ -34,11 +34,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  let videoBuffer: Buffer;
   try {
     const soundSrc = path.join(process.cwd(), "src/pages/api/sound.mp3");
-    await createVideo(soundSrc);
+    const outputpath = await createVideo(soundSrc);
+
+    videoBuffer = fs.readFileSync(outputpath);
+    res.setHeader("Content-Type", "video/mp4");
+    return res.status(200).send(videoBuffer);
   } catch (err) {
     console.log(err);
   }
-  res.status(200).json({ name: "John Doe" });
+
+  res.status(500).json({ error: "Some error" });
 }
