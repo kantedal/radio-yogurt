@@ -8,7 +8,8 @@
 # testing
 /coverage
 
-/output
+/output/result.mp4
+/output/voiceGeneration.wav
 
 # next.js
 /.next/

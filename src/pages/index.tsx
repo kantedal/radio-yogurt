@@ -59,23 +59,16 @@ const Home: NextPage = () => {
           }
         }),
       )
-    } else {
-      // setVoicesInShow(
-      //   voicesInShow.map((voice) => {
-      //     const voiceConfig = voices.find((v) => v.name === voice.name)
-      //     if (!voiceConfig) {
-      //       return voice
-      //     }
-      //     return {
-      //       ...voice,
-      //     }
-      //   }),
-      // )
+    } else if (peopleInShow.length === 0) {
+      setVoicesInShow([{ name: 'DavisNeural', type: 'shouting' }])
     }
     // eslint-disable-next-line
   }, [debouncedRadioShow])
 
   const handleCreateRadioShow = async () => {
+    if (!radioShow) {
+    }
+
     const toastId = toast.loading('Generating radio show...')
     try {
       const voicesInRadioShow = radioShow
@@ -102,7 +95,7 @@ const Home: NextPage = () => {
         return {
           name: voice.name,
           type: voice.type,
-          text: voiceText,
+          text: voiceText || voiceName,
         }
       })
 
@@ -112,6 +105,12 @@ const Home: NextPage = () => {
         method: 'POST',
         body: JSON.stringify(parsedRadioShow),
       })
+
+      if (res.status !== 200) {
+        throw new Error('Something went wrong')
+      }
+
+      console.log('hehe')
 
       const blob = await res.blob()
       saveVideoFile(blob)

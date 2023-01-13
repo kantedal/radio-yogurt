@@ -28,7 +28,7 @@ const Select = forwardRef<HTMLSelectElement, InputProps>(
             ref={ref}
             {...rest}
             className={clsx(
-              'block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400',
+              'block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 pr-8',
               'shadow-sm focus:outline-none focus:ring-radio-yogurt-primary focus:border-radio-yogurt-primary sm:text-sm',
               icon && 'pl-10',
               classes.input,
