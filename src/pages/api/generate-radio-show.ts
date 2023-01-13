@@ -14,6 +14,7 @@ const createVideo = async (soundSrc: string, duration: number) => {
     const bgMusicInput = path.join(process.cwd(), 'src/pages/api/bgmusic.mp3')
     const output = path.join(process.cwd(), outputpath)
     const hue = Math.floor(Math.random() * 360)
+    const hueSpeed = Math.floor(Math.random() * 3) + 1
     const cmd = `${ffmpeg_static} -i ${imageInput} -i ${bgMusicInput} -i ${soundSrc} -map 0:v -map 1:a -map 2:a -c copy -t ${
       duration / 10000000
     } ${output}`
@@ -42,7 +43,7 @@ const createVideo = async (soundSrc: string, duration: number) => {
       '-x265-params',
       'lossless=1',
       '-vf',
-      `hue=h=${hue}:s=2`,
+      `hue=H=${hueSpeed}*PI*t+${hue}: s=sin(2*PI*t)+1`,
       '-s',
       '1080x1080',
       '-t',
