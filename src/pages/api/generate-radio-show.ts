@@ -74,13 +74,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     </speak>
   `
 
-  await new Promise<void>((resolve, reject) => {
+  const duration = await new Promise<number>((resolve, reject) => {
     synthesizer.speakSsmlAsync(
       ssml,
       (result) => {
+        console.log(result)
         if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
           console.log('synthesis finished.')
-          resolve()
+          resolve(result.audioDuration)
         } else {
           console.error('Speech synthesis canceled, ' + result.errorDetails + '\nDid you set the speech resource key and region values?')
           reject()
